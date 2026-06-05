@@ -11,6 +11,13 @@
 - Гибкий формат URL: `ftp://host:21/path` или `host` + отдельные поля
 - Имя файла на сервере: дата и время (`дд.мм.гггг_ЧЧ-мм-сс.png`)
 
+## Ubuntu 24.04
+
+```bash
+sudo dpkg -i flameshot-14.1.0-1.ubuntu-24.04.amd64.deb
+sudo apt-get install -f
+```
+
 ## Сборка Windows (локально)
 
 ```bat
