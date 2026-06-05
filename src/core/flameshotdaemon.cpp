@@ -10,9 +10,15 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QGuiApplication>
 #include <QIODevice>
+#include <QMimeData>
 #include <QPixmap>
 #include <QRect>
+
+#if defined(USE_WAYLAND_CLIPBOARD)
+#include <KSystemClipboard>
+#endif
 
 #if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
 #include <QDBusConnection>
@@ -348,7 +354,7 @@ void FlameshotDaemon::attachScreenshotToClipboard(const QByteArray& screenshot)
 void FlameshotDaemon::attachTextToClipboard(const QString& text,
                                             const QString& notification)
 {
-    // Must send notification before clipboard modification on linux
+    // На Linux уведомление должно быть до изменения буфера обмена
     if (!notification.isEmpty()) {
         AbstractLogger::info() << notification;
     }
@@ -357,10 +363,23 @@ void FlameshotDaemon::attachTextToClipboard(const QString& text,
     QClipboard* clipboard = QApplication::clipboard();
 
     clipboard->blockSignals(true);
-    // This variable is necessary because the signal doesn't get blocked on
-    // windows for some reason
+    // Эта переменная нужна, потому что сигнал на Windows по какой-то причине
+    // не блокируется
     m_clipboardSignalBlocked = true;
+
+#if defined(USE_WAYLAND_CLIPBOARD)
+    if (QGuiApplication::platformName() == QLatin1String("wayland")) {
+        auto* mimeData = new QMimeData();
+        mimeData->setText(text);
+        KSystemClipboard::instance()->setMimeData(mimeData,
+                                                  QClipboard::Clipboard);
+    } else {
+        clipboard->setText(text);
+    }
+#else
     clipboard->setText(text);
+#endif
+
     clipboard->blockSignals(false);
 }
 

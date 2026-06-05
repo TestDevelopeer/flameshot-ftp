@@ -10,6 +10,7 @@ Build-Depends:
  qt6-tools-dev-tools (>= 6.2.4~),
  qt6-svg-dev (>= 6.2.4~) | libqt6svg6-dev (>= 6.2.4~),
  qt6-l10n-tools (>= 6.2.4~),
+ libkf6guiaddons-dev,
  libgl-dev,
 Rules-Requires-Root: no
 Standards-Version: 4.7.2
@@ -34,6 +35,7 @@ Depends:
  libqt6network6 (>= 6.2.4~),
  libqt6widgets6 (>= 6.2.4~),
  libqt6svg6 (>= 6.2.4~),
+ libkf6guiaddons6,
 Recommends:
  xdg-desktop-portal-gtk | xdg-desktop-portal-gnome | xdg-desktop-portal-kde | xdg-desktop-portal-wlr,
  grim,
