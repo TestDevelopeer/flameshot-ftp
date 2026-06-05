@@ -15,10 +15,12 @@ public:
 
 public slots:
     void updateComponents();
+    void saveSettings();
 
 private slots:
     void urlChanged();
     void remotePathChanged();
+    void siteUrlChanged();
     void portChanged(int value);
     void usernameChanged();
     void passwordChanged();
@@ -29,6 +31,7 @@ private slots:
 private:
     QLineEdit* m_url;
     QLineEdit* m_remotePath;
+    QLineEdit* m_siteUrl;
     QSpinBox* m_port;
     QLineEdit* m_username;
     QLineEdit* m_password;

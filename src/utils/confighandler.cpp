@@ -139,6 +139,7 @@ static QMap<class QString, QSharedPointer<ValueHandler>>
     OPTION("ftpPassword"                 ,String             ( ""            )),
     OPTION("ftpUseFtps"                  ,Bool               ( false         )),
     OPTION("ftpImplicitFtps"             ,Bool               ( false         )),
+    OPTION("ftpSiteUrl"                  ,String             ( ""            )),
     OPTION("showSelectionGeometry"       , BoundedInt        ( 0, 5, 4       )),
     OPTION("showSelectionGeometryHideTime", LowerBoundedInt  ( 0, 3000       )),
     OPTION("jpegQuality"                 , BoundedInt        ( 0,100,75      )),
@@ -429,6 +430,11 @@ void ConfigHandler::setDefaultSettings()
 QString ConfigHandler::configFilePath() const
 {
     return m_settings.fileName();
+}
+
+void ConfigHandler::sync()
+{
+    m_settings.sync();
 }
 
 // GENERIC GETTERS AND SETTERS

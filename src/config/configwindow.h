@@ -24,6 +24,7 @@ signals:
 
 protected:
     void keyPressEvent(QKeyEvent*);
+    void closeEvent(QCloseEvent* event);
 
 private:
     QTabWidget* m_tabWidget;

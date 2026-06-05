@@ -142,6 +142,7 @@ public:
     CONFIG_GETTER_SETTER(ftpPassword, setFtpPassword, QString)
     CONFIG_GETTER_SETTER(ftpUseFtps, setFtpUseFtps, bool)
     CONFIG_GETTER_SETTER(ftpImplicitFtps, setFtpImplicitFtps, bool)
+    CONFIG_GETTER_SETTER(ftpSiteUrl, setFtpSiteUrl, QString)
     CONFIG_GETTER_SETTER(saveLastRegion, setSaveLastRegion, bool)
     CONFIG_GETTER_SETTER(showSelectionGeometry, setShowSelectionGeometry, int)
     CONFIG_GETTER_SETTER(jpegQuality, setJpegQuality, int)
@@ -175,6 +176,7 @@ public:
     QString filenamePatternDefault();
     void setDefaultSettings();
     QString configFilePath() const;
+    void sync();
 
     // GENERIC GETTERS AND SETTERS
     bool setShortcut(const QString& actionName, const QString& shortcut);

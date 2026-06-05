@@ -68,8 +68,11 @@ constexpr const char* visibleInDockProperty = "_visibleInDock";
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QThread>
+
+#include <memory>
 #include <QTimer>
 #include <QUrl>
 #include <QVersionNumber>
@@ -524,6 +527,7 @@ void Flameshot::exportCapture(const QPixmap& capture,
         ResolvedFtpSettings settings;
         QString settingsError;
         if (!FtpSettings::resolveFromConfig(settings, settingsError)) {
+            // Ошибка настроек всегда в лог; desktop-уведомление — при showDesktopNotification
             AbstractLogger::error() << settingsError;
             if (ConfigHandler().showDesktopNotification()) {
                 SystemNotification().sendMessage(settingsError);
@@ -533,22 +537,51 @@ void Flameshot::exportCapture(const QPixmap& capture,
                 SystemNotification().sendMessage(
                   QObject::tr("Загрузка скриншота на FTP..."));
             }
-            const QPixmap captureCopy = capture;
-            auto* uploadThread = QThread::create([settings, captureCopy]() {
+            struct FtpUploadResult
+            {
+                bool success = false;
                 QString uploadedPath;
                 QString uploadError;
-                if (FtpUploader::uploadPng(
-                      settings, captureCopy, uploadedPath, uploadError)) {
+                QString publicUrl;
+            };
+
+            const QPixmap captureCopy = capture;
+            const int tasksCopy = tasks;
+            const QString siteUrl = ConfigHandler().ftpSiteUrl();
+            auto result = std::make_shared<FtpUploadResult>();
+            auto* uploadThread = QThread::create(
+              [settings, captureCopy, siteUrl, result]() {
+                  QString uploadedPath;
+                  QString uploadError;
+                  if (FtpUploader::uploadPng(
+                        settings, captureCopy, uploadedPath, uploadError)) {
+                      result->success = true;
+                      result->uploadedPath = uploadedPath;
+                      result->publicUrl = FtpSettings::buildPublicFileUrl(
+                        siteUrl, QFileInfo(uploadedPath).fileName());
+                  } else {
+                      result->uploadError = uploadError;
+                  }
+              });
+            QObject::connect(uploadThread, &QThread::finished, qApp, [result, tasksCopy]() {
+                if (result->success) {
+                    if (!result->publicUrl.isEmpty() && !(tasksCopy & CR::COPY)) {
+                        FlameshotDaemon::copyToClipboard(
+                          result->publicUrl,
+                          QObject::tr("Ссылка скопирована в буфер обмена."));
+                    }
                     const QString okMessage =
                       QObject::tr("Скриншот загружен в FTP: %1")
-                        .arg(uploadedPath);
+                        .arg(result->publicUrl.isEmpty() ? result->uploadedPath
+                                                         : result->publicUrl);
                     AbstractLogger::info() << okMessage;
                     if (ConfigHandler().showDesktopNotification()) {
                         SystemNotification().sendMessage(okMessage);
                     }
                 } else {
+                    // Ошибка всегда в лог; desktop-уведомление — при showDesktopNotification
                     const QString failMessage =
-                      QObject::tr("Ошибка FTP-загрузки: %1").arg(uploadError);
+                      QObject::tr("Ошибка FTP-загрузки: %1").arg(result->uploadError);
                     AbstractLogger::error() << failMessage;
                     if (ConfigHandler().showDesktopNotification()) {
                         SystemNotification().sendMessage(failMessage);

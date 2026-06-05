@@ -14,6 +14,7 @@
 #include "utils/pathinfo.h"
 
 #include <QApplication>
+#include <QCloseEvent>
 #include <QDialogButtonBox>
 #include <QFileSystemWatcher>
 #include <QIcon>
@@ -130,6 +131,12 @@ void ConfigWindow::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Escape) {
         close();
     }
+}
+
+void ConfigWindow::closeEvent(QCloseEvent* event)
+{
+    m_ftpConfig->saveSettings();
+    QWidget::closeEvent(event);
 }
 
 void ConfigWindow::initErrorIndicator(QWidget* tab, QWidget* widget)

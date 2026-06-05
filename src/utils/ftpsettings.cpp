@@ -25,6 +25,25 @@ QString normalizeRemotePath(const QString& value)
 }
 }
 
+QString FtpSettings::normalizeSiteUrl(const QString& raw)
+{
+    QString normalized = raw.trimmed();
+    while (normalized.endsWith(QLatin1Char('/'))) {
+        normalized.chop(1);
+    }
+    return normalized;
+}
+
+QString FtpSettings::buildPublicFileUrl(const QString& siteUrl,
+                                        const QString& fileName)
+{
+    const QString base = normalizeSiteUrl(siteUrl);
+    if (base.isEmpty() || fileName.isEmpty()) {
+        return {};
+    }
+    return QStringLiteral("%1/%2").arg(base, fileName);
+}
+
 bool FtpSettings::resolveFromConfig(ResolvedFtpSettings& settings, QString& error)
 {
     ConfigHandler config;

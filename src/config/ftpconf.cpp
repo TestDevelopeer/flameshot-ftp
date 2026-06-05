@@ -40,6 +40,17 @@ FtpConf::FtpConf(QWidget* parent)
     m_remotePath->setPlaceholderText(tr("/screenshots"));
     form->addRow(tr("Remote folder"), m_remotePath);
 
+    m_siteUrl = new QLineEdit(this);
+    m_siteUrl->setPlaceholderText(tr("https://example.com/screenshots"));
+    form->addRow(tr("Site URL"), m_siteUrl);
+
+    auto* siteUrlHint = new QLabel(
+      tr("Публичный HTTP/HTTPS-адрес для ссылки на загруженный файл. "
+         "Завершающий слэш не нужен."),
+      this);
+    siteUrlHint->setWordWrap(true);
+    form->addRow(siteUrlHint);
+
     m_username = new QLineEdit(this);
     form->addRow(tr("Login"), m_username);
 
@@ -65,6 +76,10 @@ FtpConf::FtpConf(QWidget* parent)
             &QLineEdit::editingFinished,
             this,
             &FtpConf::remotePathChanged);
+    connect(m_siteUrl,
+            &QLineEdit::editingFinished,
+            this,
+            &FtpConf::siteUrlChanged);
     connect(
       m_port, &QSpinBox::valueChanged, this, &FtpConf::portChanged);
     connect(m_username,
@@ -94,6 +109,7 @@ void FtpConf::updateComponents()
     ConfigHandler config;
     m_url->setText(config.ftpUrl());
     m_remotePath->setText(config.ftpRemotePath());
+    m_siteUrl->setText(config.ftpSiteUrl());
     m_port->setValue(config.ftpPort());
     m_username->setText(config.ftpUsername());
     m_password->setText(config.ftpPassword());
@@ -110,6 +126,16 @@ void FtpConf::urlChanged()
 void FtpConf::remotePathChanged()
 {
     ConfigHandler().setFtpRemotePath(m_remotePath->text());
+}
+
+void FtpConf::siteUrlChanged()
+{
+    const QString normalized =
+      FtpSettings::normalizeSiteUrl(m_siteUrl->text());
+    if (normalized != m_siteUrl->text()) {
+        m_siteUrl->setText(normalized);
+    }
+    ConfigHandler().setFtpSiteUrl(normalized);
 }
 
 void FtpConf::portChanged(int value)
@@ -146,8 +172,30 @@ void FtpConf::implicitFtpsChanged(bool checked)
     updateComponents();
 }
 
+void FtpConf::saveSettings()
+{
+    ConfigHandler config;
+    config.setFtpUrl(m_url->text().trimmed());
+    config.setFtpRemotePath(m_remotePath->text().trimmed());
+    const QString normalized =
+      FtpSettings::normalizeSiteUrl(m_siteUrl->text());
+    if (normalized != m_siteUrl->text()) {
+        m_siteUrl->setText(normalized);
+    }
+    config.setFtpSiteUrl(normalized);
+    config.setFtpPort(m_port->value());
+    config.setFtpUsername(m_username->text().trimmed());
+    config.setFtpPassword(m_password->text());
+    config.setFtpImplicitFtps(m_implicitFtps->isChecked());
+    if (!m_implicitFtps->isChecked()) {
+        config.setFtpUseFtps(m_useFtps->isChecked());
+    }
+    config.sync();
+}
+
 void FtpConf::testConnection()
 {
+    saveSettings();
     ResolvedFtpSettings settings;
     QString error;
     if (!FtpSettings::resolveFromConfig(settings, error)) {

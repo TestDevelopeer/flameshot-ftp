@@ -1,6 +1,7 @@
 # common
 
 aqtinstall.log
+_release-assets/
 .idea
 .cache
 # C++ objects and libs
