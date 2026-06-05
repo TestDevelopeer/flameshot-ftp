@@ -1,6 +1,6 @@
 flameshot (14.1.2-1) unstable; urgency=medium
 
-  * Release for v14.1.2 (Wayland clipboard fix for FTP public URL)
+  * Release for v14.1.2 (Wayland clipboard fix for FTP public URL, без KF6)
 
  -- Flameshot FTP Fork <noreply@flameshot-ftp>  Fri, 05 Jun 2026 12:00:00 +0000
 

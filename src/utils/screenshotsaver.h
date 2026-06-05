@@ -14,6 +14,7 @@ bool saveToFilesystem(const QPixmap& capture,
 QString ShowSaveFileDialog(const QString& title, const QString& directory);
 void saveToClipboardMime(const QPixmap& capture, const QString& imageType);
 void saveToClipboard(const QPixmap& capture);
+void saveTextToClipboard(const QString& text);
 // GNOME Wayland: keeps the widget alive until clipboard data is fetched
 bool saveToClipboardGnomeWorkaround(const QPixmap& pixmap, QWidget* keepAlive);
 bool saveToFilesystemGUI(const QPixmap& capture);

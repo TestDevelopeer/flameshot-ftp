@@ -10,15 +10,9 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QGuiApplication>
 #include <QIODevice>
-#include <QMimeData>
 #include <QPixmap>
 #include <QRect>
-
-#if defined(USE_WAYLAND_CLIPBOARD)
-#include <KSystemClipboard>
-#endif
 
 #if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
 #include <QDBusConnection>
@@ -366,20 +360,7 @@ void FlameshotDaemon::attachTextToClipboard(const QString& text,
     // Эта переменная нужна, потому что сигнал на Windows по какой-то причине
     // не блокируется
     m_clipboardSignalBlocked = true;
-
-#if defined(USE_WAYLAND_CLIPBOARD)
-    if (QGuiApplication::platformName() == QLatin1String("wayland")) {
-        auto* mimeData = new QMimeData();
-        mimeData->setText(text);
-        KSystemClipboard::instance()->setMimeData(mimeData,
-                                                  QClipboard::Clipboard);
-    } else {
-        clipboard->setText(text);
-    }
-#else
-    clipboard->setText(text);
-#endif
-
+    saveTextToClipboard(text);
     clipboard->blockSignals(false);
 }
 

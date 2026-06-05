@@ -2,8 +2,7 @@
 
 ## Исправления
 
-- Копирование публичной FTP-ссылки в буфер обмена на Ubuntu/Wayland (GNOME, KDE и др.)
-- Сборка deb включает `USE_WAYLAND_CLIPBOARD` и зависимость `libkf6guiaddons6`
+- Копирование публичной FTP-ссылки в буфер обмена на Ubuntu/Wayland (GNOME и др.) через ленивый QMimeData
 
 ## Ubuntu 24.04
 

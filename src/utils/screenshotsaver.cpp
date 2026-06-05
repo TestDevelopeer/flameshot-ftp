@@ -23,6 +23,8 @@
 #include <QApplication>
 #include <QBuffer>
 #include <QClipboard>
+#include <QGuiApplication>
+#include <QMimeData>
 #include <QFileDialog>
 #include <QGuiApplication>
 #include <QMessageBox>
@@ -193,6 +195,57 @@ void saveToClipboard(const QPixmap& capture)
 #endif
     }
 #endif
+}
+
+class LazyTextClipboardMimeData : public QMimeData
+{
+public:
+    explicit LazyTextClipboardMimeData(QString text)
+      : m_text(std::move(text))
+    {}
+
+protected:
+    QStringList formats() const override
+    {
+        return { QStringLiteral("text/plain"),
+                 QStringLiteral("text/plain;charset=utf-8") };
+    }
+
+    QVariant retrieveData(const QString& mimeType,
+                          QMetaType type) const override
+    {
+        if (mimeType == QLatin1String("text/plain") ||
+            mimeType == QLatin1String("text/plain;charset=utf-8")) {
+            return m_text;
+        }
+        return QMimeData::retrieveData(mimeType, type);
+    }
+
+private:
+    QString m_text;
+};
+
+void saveTextToClipboard(const QString& text)
+{
+#if defined(USE_WAYLAND_CLIPBOARD)
+    if (QGuiApplication::platformName() == QLatin1String("wayland")) {
+        auto* mimeData = new QMimeData();
+        mimeData->setText(text);
+        KSystemClipboard::instance()->setMimeData(mimeData,
+                                                  QClipboard::Clipboard);
+        return;
+    }
+#endif
+
+#if defined(Q_OS_UNIX)
+    if (DesktopInfo().waylandDetected()) {
+        auto* mimeData = new LazyTextClipboardMimeData(text);
+        QApplication::clipboard()->setMimeData(mimeData);
+        return;
+    }
+#endif
+
+    QApplication::clipboard()->setText(text);
 }
 
 class ClipboardWatcherMimeData : public QMimeData
