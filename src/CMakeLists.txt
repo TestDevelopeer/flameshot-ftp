@@ -88,7 +88,13 @@ if (WIN32)
         PRIVATE
         windows-cli.cpp)
     set_target_properties(flameshot-cli PROPERTIES OUTPUT_NAME "flameshot-cli")
-    target_link_options(flameshot-cli PRIVATE /SUBSYSTEM:CONSOLE)
+    if (MSVC)
+        target_link_options(flameshot-cli PRIVATE /SUBSYSTEM:CONSOLE)
+    elseif (MINGW)
+        # wmain() требует -municode при сборке MinGW
+        target_compile_options(flameshot-cli PRIVATE -municode)
+        target_link_options(flameshot-cli PRIVATE -municode -mconsole)
+    endif ()
     set_property(TARGET flameshot PROPERTY WIN32_EXECUTABLE true)
     # Getting error D8016 - /utf-8 automatically set by current cmake/msvc ?
     #if (MSVC)
@@ -164,6 +170,17 @@ if (GENERATE_TS)
   qt6_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${FLAMESHOT_TS_FILES})
 else ()
   qt6_add_translation(QM_FILES ${FLAMESHOT_TS_FILES})
+endif ()
+
+if (WIN32)
+    # windres не раскрывает макросы в VALUE — генерируем литералы версии
+    set(FLAMESHOT_VERSION_INC "${CMAKE_BINARY_DIR}/flameshot_version_strings.inc")
+    file(WRITE "${FLAMESHOT_VERSION_INC}"
+            "            VALUE \"FileVersion\",      \"${PROJECT_VERSION}\"\n"
+            "            VALUE \"ProductVersion\",   \"${PROJECT_VERSION}\"\n")
+    set_source_files_properties(
+            ${CMAKE_CURRENT_SOURCE_DIR}/../data/flameshot.rc
+            PROPERTIES COMPILE_OPTIONS "-I${CMAKE_BINARY_DIR}")
 endif ()
 
 target_sources(

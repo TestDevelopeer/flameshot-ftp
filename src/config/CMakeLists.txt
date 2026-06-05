@@ -8,6 +8,7 @@ target_sources(
           configerrordetails.cpp
           configresolver.cpp
           configwindow.cpp
+         ftpconf.cpp
           extendedslider.cpp
           filenameeditor.cpp
           generalconf.cpp

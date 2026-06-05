@@ -3,6 +3,8 @@ target_sources(
   flameshot
   PRIVATE abstractlogger.h
           filenamehandler.h
+          ftpuploader.h
+          ftpsettings.h
           screengrabber.h
           systemnotification.h
           valuehandler.h
@@ -13,6 +15,8 @@ target_sources(
   flameshot
   PRIVATE abstractlogger.cpp
           filenamehandler.cpp
+          ftpuploader.cpp
+          ftpsettings.cpp
           screengrabber.cpp
           monitorpreview.cpp
           confighandler.cpp

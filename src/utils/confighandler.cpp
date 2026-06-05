@@ -132,6 +132,13 @@ static QMap<class QString, QSharedPointer<ValueHandler>>
     // drawFontSize, remember to update ConfigHandler::toolSize
     OPTION("copyOnDoubleClick"           ,Bool               ( false         )),
     OPTION("uploadClientSecret"          ,String             ( "313baf0c7b4d3ff" )),
+    OPTION("ftpUrl"                      ,String             ( ""            )),
+    OPTION("ftpRemotePath"               ,String             ( ""            )),
+    OPTION("ftpPort"                     ,BoundedInt         ( 1, 65535, 21  )),
+    OPTION("ftpUsername"                 ,String             ( ""            )),
+    OPTION("ftpPassword"                 ,String             ( ""            )),
+    OPTION("ftpUseFtps"                  ,Bool               ( false         )),
+    OPTION("ftpImplicitFtps"             ,Bool               ( false         )),
     OPTION("showSelectionGeometry"       , BoundedInt        ( 0, 5, 4       )),
     OPTION("showSelectionGeometryHideTime", LowerBoundedInt  ( 0, 3000       )),
     OPTION("jpegQuality"                 , BoundedInt        ( 0,100,75      )),
@@ -166,6 +173,7 @@ static QMap<QString, QSharedPointer<KeySequence>> recognizedShortcuts = {
     SHORTCUT("TYPE_UNDO"                ,   "Ctrl+Z"                ),
     SHORTCUT("TYPE_COPY"                ,   "Ctrl+C"                ),
     SHORTCUT("TYPE_SAVE"                ,   "Ctrl+S"                ),
+    SHORTCUT("TYPE_FTP_UPLOADER"        ,                           ),
     SHORTCUT("TYPE_ACCEPT"              ,   "Return"                ),
     SHORTCUT("TYPE_EXIT"                ,   "Ctrl+Q"                ),
     SHORTCUT("TYPE_CANCEL"              ,   "Ctrl+Backspace"        ),
@@ -403,7 +411,7 @@ int ConfigHandler::toolSize(CaptureTool::Type toolType)
 
 QString ConfigHandler::filenamePatternDefault()
 {
-    return QStringLiteral("%F_%H-%M");
+    return QStringLiteral("%d.%m.%Y_%H-%M-%S");
 }
 
 void ConfigHandler::setDefaultSettings()

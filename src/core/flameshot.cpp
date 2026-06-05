@@ -47,8 +47,11 @@ constexpr const char* visibleInDockProperty = "_visibleInDock";
 #include "core/qguiappcurrentscreen.h"
 #include "utils/abstractlogger.h"
 #include "utils/confighandler.h"
+#include "utils/ftpsettings.h"
+#include "utils/ftpuploader.h"
 #include "utils/screengrabber.h"
 #include "utils/screenshotsaver.h"
+#include "utils/systemnotification.h"
 #include "widgets/capture/capturewidget.h"
 #include "widgets/capturelauncher.h"
 #include "widgets/infowindow.h"
@@ -517,7 +520,50 @@ void Flameshot::exportCapture(const QPixmap& capture,
     }
 #endif
 
-    if (!(tasks & CR::UPLOAD)) {
+    if (tasks & CR::FTP_UPLOAD) {
+        ResolvedFtpSettings settings;
+        QString settingsError;
+        if (!FtpSettings::resolveFromConfig(settings, settingsError)) {
+            AbstractLogger::error() << settingsError;
+            if (ConfigHandler().showDesktopNotification()) {
+                SystemNotification().sendMessage(settingsError);
+            }
+        } else {
+            if (ConfigHandler().showDesktopNotification()) {
+                SystemNotification().sendMessage(
+                  QObject::tr("Загрузка скриншота на FTP..."));
+            }
+            const QPixmap captureCopy = capture;
+            auto* uploadThread = QThread::create([settings, captureCopy]() {
+                QString uploadedPath;
+                QString uploadError;
+                if (FtpUploader::uploadPng(
+                      settings, captureCopy, uploadedPath, uploadError)) {
+                    const QString okMessage =
+                      QObject::tr("Скриншот загружен в FTP: %1")
+                        .arg(uploadedPath);
+                    AbstractLogger::info() << okMessage;
+                    if (ConfigHandler().showDesktopNotification()) {
+                        SystemNotification().sendMessage(okMessage);
+                    }
+                } else {
+                    const QString failMessage =
+                      QObject::tr("Ошибка FTP-загрузки: %1").arg(uploadError);
+                    AbstractLogger::error() << failMessage;
+                    if (ConfigHandler().showDesktopNotification()) {
+                        SystemNotification().sendMessage(failMessage);
+                    }
+                }
+            });
+            QObject::connect(uploadThread,
+                             &QThread::finished,
+                             uploadThread,
+                             &QObject::deleteLater);
+            uploadThread->start();
+        }
+    }
+
+    if (!(tasks & CR::UPLOAD) && !(tasks & CR::FTP_UPLOAD)) {
         emit captureTaken(capture);
     }
 }

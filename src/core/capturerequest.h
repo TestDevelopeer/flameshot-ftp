@@ -27,6 +27,7 @@ public:
         PIN = 16,
         UPLOAD = 32,
         ACCEPT_ON_SELECT = 64,
+        FTP_UPLOAD = 128,
     };
 
     CaptureRequest(CaptureMode mode,

@@ -4,6 +4,7 @@
 #include "configwindow.h"
 #include "config/configresolver.h"
 #include "config/filenameeditor.h"
+#include "config/ftpconf.h"
 #include "config/generalconf.h"
 #include "config/shortcutswidget.h"
 #include "config/visualseditor.h"
@@ -62,6 +63,14 @@ ConfigWindow::ConfigWindow(QWidget* parent)
     m_tabWidget->addTab(
       m_generalConfigTab, QIcon(modifier + "config.svg"), tr("General"));
 
+    // ftp
+    m_ftpConfig = new FtpConf();
+    m_ftpConfigTab = new QWidget();
+    auto* ftpConfigLayout = new QVBoxLayout(m_ftpConfigTab);
+    m_ftpConfigTab->setLayout(ftpConfigLayout);
+    ftpConfigLayout->addWidget(m_ftpConfig);
+    m_tabWidget->addTab(m_ftpConfigTab, QIcon(modifier + "cloud-upload.svg"), tr("FTP"));
+
     // visuals
     m_visuals = new VisualsEditor();
     m_visualsTab = new QWidget();
@@ -103,11 +112,16 @@ ConfigWindow::ConfigWindow(QWidget* parent)
             &ConfigWindow::updateChildren,
             m_generalConfig,
             &GeneralConf::updateComponents);
+    connect(this,
+            &ConfigWindow::updateChildren,
+            m_ftpConfig,
+            &FtpConf::updateComponents);
 
     // Error indicator (this must come last)
     initErrorIndicator(m_visualsTab, m_visuals);
     initErrorIndicator(m_filenameEditorTab, m_filenameEditor);
     initErrorIndicator(m_generalConfigTab, m_generalConfig);
+    initErrorIndicator(m_ftpConfigTab, m_ftpConfig);
     initErrorIndicator(m_shortcutsTab, m_shortcuts);
 }
 

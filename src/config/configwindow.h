@@ -8,6 +8,7 @@
 class FileNameEditor;
 class ShortcutsWidget;
 class GeneralConf;
+class FtpConf;
 class QFileSystemWatcher;
 class VisualsEditor;
 class QWidget;
@@ -35,6 +36,9 @@ private:
 
     GeneralConf* m_generalConfig;
     QWidget* m_generalConfigTab;
+
+    FtpConf* m_ftpConfig;
+    QWidget* m_ftpConfigTab;
 
     VisualsEditor* m_visuals;
     QWidget* m_visualsTab;
