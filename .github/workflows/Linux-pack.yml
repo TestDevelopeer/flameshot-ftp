@@ -5,8 +5,6 @@ on:
     branches:
       - master
       - fix*
-    tags:
-      - 'v*'
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
@@ -172,28 +170,6 @@ jobs:
             ${{ github.workspace }}/build/${{ env.PRODUCT }}-*-${{ env.RELEASE }}.${{ matrix.dist.name }}.${{ matrix.dist.arch }}.deb
             ${{ github.workspace }}/build/${{ env.PRODUCT }}-*-${{ env.RELEASE }}.${{ matrix.dist.name }}.${{ matrix.dist.arch }}.deb.sha256sum
           overwrite: true
-
-  publish-ubuntu-24-deb:
-    name: Publish Ubuntu 24.04 deb to GitHub Release
-    needs: deb-pack
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download Ubuntu 24.04 amd64 package
-        uses: actions/download-artifact@v4
-        with:
-          pattern: '*-artifact-ubuntu-24.04-amd64'
-          merge-multiple: true
-          path: release-assets
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: release-assets/*
-          fail_on_unmatched_files: true
 
   rpm-pack:
     name: Build rpm on ${{ matrix.dist.name }} ${{ matrix.dist.arch }}

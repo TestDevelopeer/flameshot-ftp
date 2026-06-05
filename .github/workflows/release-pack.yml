@@ -1,0 +1,165 @@
+name: Release Pack
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PRODUCT: flameshot
+  RELEASE: 1
+
+jobs:
+  windows-portable:
+    name: Windows x64 portable
+    runs-on: windows-2022
+    env:
+      VCINSTALLDIR: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC
+      VCPKG_VERSION: d5ec528843d29e3a52d745a64b469f810b2cedbf
+      VCPKG_PACKAGES: openssl-windows
+      OPENSSL_ROOT_DIR: ${{ github.workspace }}\vcpkg\installed\x64-windows\
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fix Python path
+        shell: pwsh
+        run: |
+          Remove-Item "$env:LOCALAPPDATA\Microsoft\WindowsApps\python*.exe" -Force -ErrorAction SilentlyContinue
+
+      - name: Set version
+        shell: bash
+        run: |
+          echo "VERSION=$(grep 'FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//g')" >> $GITHUB_ENV
+
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgArguments: ${{ env.VCPKG_PACKAGES }}
+          vcpkgDirectory: '${{ github.workspace }}\vcpkg'
+          appendedCacheKey: x64-windows
+          vcpkgGitCommitId: ${{ env.VCPKG_VERSION }}
+          vcpkgTriplet: x64-windows
+
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.9.3'
+          cache: 'true'
+          cache-key-prefix: install-qt-action-6.9.3
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: 'qtimageformats'
+          dir: '${{ github.workspace }}/build/'
+
+      - name: Configure
+        working-directory: build
+        shell: pwsh
+        run: |
+          cmake .. -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake" `
+            -DENABLE_OPENSSL=ON `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DUSE_PORTABLE_CONFIG=ON
+
+      - name: Compile
+        working-directory: build
+        shell: pwsh
+        run: cmake --build . --config Release
+
+      - name: Package portable zip
+        working-directory: build
+        shell: pwsh
+        run: |
+          cpack -G ZIP -B "$env:GITHUB_WORKSPACE\build\Package"
+          New-Item -Path "$env:GITHUB_WORKSPACE\build\Package\portable" -ItemType Directory -Force
+          Move-Item -Path "$env:GITHUB_WORKSPACE\build\Package\flameshot-*-win64.zip" `
+            -Destination "$env:GITHUB_WORKSPACE\build\Package\portable\flameshot-$env:VERSION-win64.zip"
+
+      - name: SHA256Sum
+        shell: bash
+        run: |
+          cd "$GITHUB_WORKSPACE/build/Package/portable"
+          sha256sum flameshot-${{ env.VERSION }}-win64.zip | tee flameshot-${{ env.VERSION }}-win64.zip.sha256sum
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-portable
+          path: |
+            build/Package/portable/flameshot-${{ env.VERSION }}-win64.zip
+            build/Package/portable/flameshot-${{ env.VERSION }}-win64.zip.sha256sum
+
+  ubuntu-deb:
+    name: Ubuntu 24.04 amd64 deb
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REPO: quay.io/flameshot-org/ci-building
+      PACKPACK_REPO: flameshot-org/packpack
+    steps:
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        shell: bash
+        run: |
+          echo "VERSION=$(grep 'FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//g')" >> $GITHUB_ENV
+          echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ env.PACKPACK_REPO }}
+          path: tools
+          ref: multiarch
+          set-safe-directory: $GITHUB_WORKSPACE/tools
+
+      - name: Build deb
+        env:
+          OS: ubuntu
+          DIST: noble
+          DOCKER_ARCH: amd64
+          ARCH: amd64
+          PRESERVE_ENVVARS: GIT_HASH
+        run: |
+          cp -r $GITHUB_WORKSPACE/packaging/debian $GITHUB_WORKSPACE
+          bash $GITHUB_WORKSPACE/tools/packpack
+          mv $GITHUB_WORKSPACE/build/${PRODUCT}_${VERSION}-${RELEASE}_amd64.deb \
+            $GITHUB_WORKSPACE/build/${PRODUCT}-${VERSION}-${RELEASE}.ubuntu-24.04.amd64.deb
+
+      - name: SHA256Sum
+        run: |
+          cd "$GITHUB_WORKSPACE/build"
+          sha256sum ${PRODUCT}-${VERSION}-${RELEASE}.ubuntu-24.04.amd64.deb \
+            | tee ${PRODUCT}-${VERSION}-${RELEASE}.ubuntu-24.04.amd64.deb.sha256sum
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-ubuntu-deb
+          path: |
+            build/flameshot-*-1.ubuntu-24.04.amd64.deb
+            build/flameshot-*-1.ubuntu-24.04.amd64.deb.sha256sum
+
+  publish:
+    name: Publish GitHub Release
+    needs: [windows-portable, ubuntu-deb]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: release-assets
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: docs/ReleaseNotes_14.1.1.md
+          files: release-assets/*
+          fail_on_unmatched_files: true

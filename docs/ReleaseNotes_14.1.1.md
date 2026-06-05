@@ -19,9 +19,8 @@ sudo dpkg -i flameshot-14.1.1-1.ubuntu-24.04.amd64.deb
 sudo apt-get install -f
 ```
 
-## Windows
+## Windows x64
 
-- **Установщик:** `Flameshot-14.1.1-win64.msi`
 - **Portable:** `flameshot-14.1.1-win64.zip`
 
 **Full Changelog**: https://github.com/TestDevelopeer/flameshot-ftp/compare/v14.1.0...v14.1.1
