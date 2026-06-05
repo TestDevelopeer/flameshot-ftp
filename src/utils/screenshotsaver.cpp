@@ -23,8 +23,6 @@
 #include <QApplication>
 #include <QBuffer>
 #include <QClipboard>
-#include <QGuiApplication>
-#include <QMimeData>
 #include <QFileDialog>
 #include <QGuiApplication>
 #include <QMessageBox>

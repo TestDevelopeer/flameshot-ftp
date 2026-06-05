@@ -10,6 +10,8 @@ on:
 
 jobs:
   build-and-deploy:
+    # Форк не имеет доступа к flameshot-org.github.io и секрета TOKEN_PUSH_TO_WEBSITE_REPO
+    if: github.repository == 'flameshot-org/flameshot'
     runs-on: ubuntu-22.04
     steps:
       - name: Install dependencies

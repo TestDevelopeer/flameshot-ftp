@@ -2,8 +2,8 @@
 #include "utils/filenamehandler.h"
 
 #include <QAbstractSocket>
-#include <QByteArray>
 #include <QBuffer>
+#include <QByteArray>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QObject>
@@ -20,7 +20,8 @@ bool readResponse(QAbstractSocket* socket, int& code, QString& message)
     QByteArray all;
     while (true) {
         if (!socket->waitForReadyRead(SOCKET_TIMEOUT_MS)) {
-            message = QObject::tr("FTP timeout while waiting for server response");
+            message =
+              QObject::tr("FTP timeout while waiting for server response");
             return false;
         }
         all.append(socket->readAll());
@@ -38,7 +39,8 @@ bool readResponse(QAbstractSocket* socket, int& code, QString& message)
         }
 
         bool ok = false;
-        const int currentCode = QString::fromLatin1(lastLine.left(3)).toInt(&ok);
+        const int currentCode =
+          QString::fromLatin1(lastLine.left(3)).toInt(&ok);
         if (!ok) {
             continue;
         }
@@ -60,7 +62,8 @@ bool sendCommand(QAbstractSocket* socket,
 {
     QByteArray payload = command.toUtf8();
     payload.append("\r\n");
-    if (socket->write(payload) < 0 || !socket->waitForBytesWritten(SOCKET_TIMEOUT_MS)) {
+    if (socket->write(payload) < 0 ||
+        !socket->waitForBytesWritten(SOCKET_TIMEOUT_MS)) {
         message = QObject::tr("FTP command write failed: %1").arg(command);
         return false;
     }
@@ -95,7 +98,8 @@ bool parsePasv(const QString& response, QString& host, quint16& port)
 QString fileNameForUpload()
 {
     QString name = FileNameHandler().parsedPattern();
-    // Запасной вариант, если шаблон не раскрылся (например, устаревший %F на Windows)
+    // Запасной вариант, если шаблон не раскрылся (например, устаревший %F на
+    // Windows)
     if (name.isEmpty() || name.contains(QLatin1Char('%'))) {
         name = QDateTime::currentDateTime().toString(
           QStringLiteral("dd.MM.yyyy_HH-mm-ss"));
@@ -193,30 +197,26 @@ bool loginAndPrepare(const ResolvedFtpSettings& settings,
         return false;
     }
 
-    if (!sendCommand(controlSocket, "TYPE I", code, response) || !isCodeOk(code)) {
+    if (!sendCommand(controlSocket, "TYPE I", code, response) ||
+        !isCodeOk(code)) {
         return false;
     }
 
-    const QStringList pathParts = settings.remotePath.split('/', Qt::SkipEmptyParts);
+    const QStringList pathParts =
+      settings.remotePath.split('/', Qt::SkipEmptyParts);
     for (const QString& part : pathParts) {
-        if (!sendCommand(controlSocket,
-                         QString("CWD %1").arg(part),
-                         code,
-                         response)) {
+        if (!sendCommand(
+              controlSocket, QString("CWD %1").arg(part), code, response)) {
             return false;
         }
         if (code >= 500) {
-            if (!sendCommand(controlSocket,
-                             QString("MKD %1").arg(part),
-                             code,
-                             response) ||
+            if (!sendCommand(
+                  controlSocket, QString("MKD %1").arg(part), code, response) ||
                 !(code == 257 || code == 250)) {
                 return false;
             }
-            if (!sendCommand(controlSocket,
-                             QString("CWD %1").arg(part),
-                             code,
-                             response) ||
+            if (!sendCommand(
+                  controlSocket, QString("CWD %1").arg(part), code, response) ||
                 !isCodeOk(code)) {
                 return false;
             }
@@ -229,7 +229,8 @@ bool loginAndPrepare(const ResolvedFtpSettings& settings,
 }
 }
 
-bool FtpUploader::testConnection(const ResolvedFtpSettings& settings, QString& error)
+bool FtpUploader::testConnection(const ResolvedFtpSettings& settings,
+                                 QString& error)
 {
     int code = 0;
     QString response;
@@ -243,7 +244,8 @@ bool FtpUploader::testConnection(const ResolvedFtpSettings& settings, QString& e
         return false;
     }
 
-    if (!sendCommand(controlSocket.get(), "NOOP", code, response) || !isCodeOk(code)) {
+    if (!sendCommand(controlSocket.get(), "NOOP", code, response) ||
+        !isCodeOk(code)) {
         error = response;
         return false;
     }
@@ -281,7 +283,8 @@ bool FtpUploader::uploadPng(const ResolvedFtpSettings& settings,
         return false;
     }
 
-    if (!sendCommand(controlSocket.get(), "PASV", code, response) || code != 227) {
+    if (!sendCommand(controlSocket.get(), "PASV", code, response) ||
+        code != 227) {
         error = response;
         return false;
     }

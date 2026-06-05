@@ -72,10 +72,10 @@ constexpr const char* visibleInDockProperty = "_visibleInDock";
 #include <QMessageBox>
 #include <QThread>
 
-#include <memory>
 #include <QTimer>
 #include <QUrl>
 #include <QVersionNumber>
+#include <memory>
 
 #if defined(Q_OS_MACOS)
 #include <QScreen>
@@ -527,7 +527,8 @@ void Flameshot::exportCapture(const QPixmap& capture,
         ResolvedFtpSettings settings;
         QString settingsError;
         if (!FtpSettings::resolveFromConfig(settings, settingsError)) {
-            // Ошибка настроек всегда в лог; desktop-уведомление — при showDesktopNotification
+            // Ошибка настроек всегда в лог; desktop-уведомление — при
+            // showDesktopNotification
             AbstractLogger::error() << settingsError;
             if (ConfigHandler().showDesktopNotification()) {
                 SystemNotification().sendMessage(settingsError);
@@ -549,8 +550,8 @@ void Flameshot::exportCapture(const QPixmap& capture,
             const int tasksCopy = tasks;
             const QString siteUrl = ConfigHandler().ftpSiteUrl();
             auto result = std::make_shared<FtpUploadResult>();
-            auto* uploadThread = QThread::create(
-              [settings, captureCopy, siteUrl, result]() {
+            auto* uploadThread =
+              QThread::create([settings, captureCopy, siteUrl, result]() {
                   QString uploadedPath;
                   QString uploadError;
                   if (FtpUploader::uploadPng(
@@ -563,31 +564,36 @@ void Flameshot::exportCapture(const QPixmap& capture,
                       result->uploadError = uploadError;
                   }
               });
-            QObject::connect(uploadThread, &QThread::finished, qApp, [result, tasksCopy]() {
-                if (result->success) {
-                    if (!result->publicUrl.isEmpty() && !(tasksCopy & CR::COPY)) {
-                        FlameshotDaemon::copyToClipboard(
-                          result->publicUrl,
-                          QObject::tr("Ссылка скопирована в буфер обмена."));
-                    }
-                    const QString okMessage =
-                      QObject::tr("Скриншот загружен в FTP: %1")
-                        .arg(result->publicUrl.isEmpty() ? result->uploadedPath
-                                                         : result->publicUrl);
-                    AbstractLogger::info() << okMessage;
-                    if (ConfigHandler().showDesktopNotification()) {
-                        SystemNotification().sendMessage(okMessage);
-                    }
-                } else {
-                    // Ошибка всегда в лог; desktop-уведомление — при showDesktopNotification
-                    const QString failMessage =
-                      QObject::tr("Ошибка FTP-загрузки: %1").arg(result->uploadError);
-                    AbstractLogger::error() << failMessage;
-                    if (ConfigHandler().showDesktopNotification()) {
-                        SystemNotification().sendMessage(failMessage);
-                    }
-                }
-            });
+            QObject::connect(
+              uploadThread, &QThread::finished, qApp, [result, tasksCopy]() {
+                  if (result->success) {
+                      if (!result->publicUrl.isEmpty() &&
+                          !(tasksCopy & CR::COPY)) {
+                          FlameshotDaemon::copyToClipboard(
+                            result->publicUrl,
+                            QObject::tr("Ссылка скопирована в буфер обмена."));
+                      }
+                      const QString okMessage =
+                        QObject::tr("Скриншот загружен в FTP: %1")
+                          .arg(result->publicUrl.isEmpty()
+                                 ? result->uploadedPath
+                                 : result->publicUrl);
+                      AbstractLogger::info() << okMessage;
+                      if (ConfigHandler().showDesktopNotification()) {
+                          SystemNotification().sendMessage(okMessage);
+                      }
+                  } else {
+                      // Ошибка всегда в лог; desktop-уведомление — при
+                      // showDesktopNotification
+                      const QString failMessage =
+                        QObject::tr("Ошибка FTP-загрузки: %1")
+                          .arg(result->uploadError);
+                      AbstractLogger::error() << failMessage;
+                      if (ConfigHandler().showDesktopNotification()) {
+                          SystemNotification().sendMessage(failMessage);
+                      }
+                  }
+              });
             QObject::connect(uploadThread,
                              &QThread::finished,
                              uploadThread,

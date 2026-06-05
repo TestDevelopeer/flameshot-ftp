@@ -44,7 +44,8 @@ QString FtpSettings::buildPublicFileUrl(const QString& siteUrl,
     return QStringLiteral("%1/%2").arg(base, fileName);
 }
 
-bool FtpSettings::resolveFromConfig(ResolvedFtpSettings& settings, QString& error)
+bool FtpSettings::resolveFromConfig(ResolvedFtpSettings& settings,
+                                    QString& error)
 {
     ConfigHandler config;
     return resolveFromRaw(config.ftpUrl(),

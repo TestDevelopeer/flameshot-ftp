@@ -19,7 +19,8 @@ public:
     static QString normalizeSiteUrl(const QString& raw);
     static QString buildPublicFileUrl(const QString& siteUrl,
                                       const QString& fileName);
-    static bool resolveFromConfig(ResolvedFtpSettings& settings, QString& error);
+    static bool resolveFromConfig(ResolvedFtpSettings& settings,
+                                  QString& error);
     static bool resolveFromRaw(const QString& rawUrl,
                                const QString& remotePath,
                                int port,

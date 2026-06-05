@@ -70,7 +70,8 @@ ConfigWindow::ConfigWindow(QWidget* parent)
     auto* ftpConfigLayout = new QVBoxLayout(m_ftpConfigTab);
     m_ftpConfigTab->setLayout(ftpConfigLayout);
     ftpConfigLayout->addWidget(m_ftpConfig);
-    m_tabWidget->addTab(m_ftpConfigTab, QIcon(modifier + "cloud-upload.svg"), tr("FTP"));
+    m_tabWidget->addTab(
+      m_ftpConfigTab, QIcon(modifier + "cloud-upload.svg"), tr("FTP"));
 
     // visuals
     m_visuals = new VisualsEditor();

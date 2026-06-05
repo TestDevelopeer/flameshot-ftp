@@ -70,32 +70,21 @@ FtpConf::FtpConf(QWidget* parent)
     layout->addWidget(groupBox);
     layout->addStretch();
 
-    connect(
-      m_url, &QLineEdit::editingFinished, this, &FtpConf::urlChanged);
+    connect(m_url, &QLineEdit::editingFinished, this, &FtpConf::urlChanged);
     connect(m_remotePath,
             &QLineEdit::editingFinished,
             this,
             &FtpConf::remotePathChanged);
-    connect(m_siteUrl,
-            &QLineEdit::editingFinished,
-            this,
-            &FtpConf::siteUrlChanged);
     connect(
-      m_port, &QSpinBox::valueChanged, this, &FtpConf::portChanged);
-    connect(m_username,
-            &QLineEdit::editingFinished,
-            this,
-            &FtpConf::usernameChanged);
-    connect(m_password,
-            &QLineEdit::editingFinished,
-            this,
-            &FtpConf::passwordChanged);
+      m_siteUrl, &QLineEdit::editingFinished, this, &FtpConf::siteUrlChanged);
+    connect(m_port, &QSpinBox::valueChanged, this, &FtpConf::portChanged);
     connect(
-      m_useFtps, &QCheckBox::clicked, this, &FtpConf::useFtpsChanged);
-    connect(m_implicitFtps,
-            &QCheckBox::clicked,
-            this,
-            &FtpConf::implicitFtpsChanged);
+      m_username, &QLineEdit::editingFinished, this, &FtpConf::usernameChanged);
+    connect(
+      m_password, &QLineEdit::editingFinished, this, &FtpConf::passwordChanged);
+    connect(m_useFtps, &QCheckBox::clicked, this, &FtpConf::useFtpsChanged);
+    connect(
+      m_implicitFtps, &QCheckBox::clicked, this, &FtpConf::implicitFtpsChanged);
     connect(m_testConnectionButton,
             &QPushButton::clicked,
             this,
@@ -130,8 +119,7 @@ void FtpConf::remotePathChanged()
 
 void FtpConf::siteUrlChanged()
 {
-    const QString normalized =
-      FtpSettings::normalizeSiteUrl(m_siteUrl->text());
+    const QString normalized = FtpSettings::normalizeSiteUrl(m_siteUrl->text());
     if (normalized != m_siteUrl->text()) {
         m_siteUrl->setText(normalized);
     }
@@ -177,8 +165,7 @@ void FtpConf::saveSettings()
     ConfigHandler config;
     config.setFtpUrl(m_url->text().trimmed());
     config.setFtpRemotePath(m_remotePath->text().trimmed());
-    const QString normalized =
-      FtpSettings::normalizeSiteUrl(m_siteUrl->text());
+    const QString normalized = FtpSettings::normalizeSiteUrl(m_siteUrl->text());
     if (normalized != m_siteUrl->text()) {
         m_siteUrl->setText(normalized);
     }
