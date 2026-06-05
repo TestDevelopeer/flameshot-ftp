@@ -35,7 +35,7 @@ jobs:
       - name: Set version
         shell: bash
         run: |
-          echo "VERSION=$(grep 'FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//g')" >> $GITHUB_ENV
+          echo "VERSION=$(grep 'set(FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//' | sed 's/)//g')" >> $GITHUB_ENV
 
       - uses: lukka/run-vcpkg@v11
         with:
@@ -108,7 +108,7 @@ jobs:
       - name: Set version
         shell: bash
         run: |
-          echo "VERSION=$(grep 'FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//g')" >> $GITHUB_ENV
+          echo "VERSION=$(grep 'set(FLAMESHOT_VERSION' CMakeLists.txt | sed 's/[^0-9.]*//' | sed 's/)//g')" >> $GITHUB_ENV
           echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - uses: actions/checkout@v6
