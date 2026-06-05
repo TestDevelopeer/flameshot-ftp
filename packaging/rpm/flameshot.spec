@@ -1,10 +1,10 @@
 Name:    flameshot
-Version: 14.0.rc3
+Version: 14.1.0
 Release: 1%{?dist}
 Summary: Powerful yet simple to use screenshot software
 
 License: GPL-3.0-or-later
-URL:     https://github.com/flameshot-org/flameshot
+URL:     https://github.com/TestDevelopeer/flameshot-ftp
 Source0: %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 Vendor:  Flameshot
 

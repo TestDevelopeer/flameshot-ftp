@@ -1,3 +1,9 @@
+flameshot (14.1.0-1) unstable; urgency=medium
+
+  * Release for v14.1.0 (FTP upload fork)
+
+ -- Igor Vereshinsky <yyyesss_sir@worksteam.io>  Fri, 05 Jun 2026 12:00:00 +0300
+
 flameshot (14.0.rc3-1) unstable; urgency=medium
 
   * Release for v14.0.rc3
